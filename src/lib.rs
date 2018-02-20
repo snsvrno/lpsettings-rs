@@ -51,6 +51,15 @@ pub fn get_value(key_path:&str) -> Option<String> {
   }
 }
 
+pub fn has_value(key_path:&str) -> bool {
+  //! checks if a value exists
+  
+  match get_value(&key_path) {
+    Some(_) => { true },
+    None => { false }
+  }
+}
+
 pub fn get_value_or(key_path : &str, default_value : &str) -> String {
   //! returns the value or the supplied default value.
 
