@@ -1,7 +1,7 @@
 //!  collection of io commands for interacting with settings files on the disk 
 
 use std::env;
-use std::fs::File;
+use std::fs::{create_dir_all,File};
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::collections::HashMap;
@@ -63,6 +63,8 @@ pub fn save_settings_map(settings : &Setting, path : &PathBuf) -> Result<(),&'st
 
   let settings_string = toml::to_string(&settings).unwrap();
 
+  create_dir_if_not_exists(&path);
+
   let file = File::create(path);
   match file {
     Err(_) => { return Err("Error creating file."); }
@@ -73,6 +75,18 @@ pub fn save_settings_map(settings : &Setting, path : &PathBuf) -> Result<(),&'st
       }
     }
   }
+}
+
+fn create_dir_if_not_exists(path :&PathBuf) -> bool {
+  if let Some(path) = path.parent() {
+    if !path.exists() { 
+      match create_dir_all(&path) {
+        Ok(_) => { return true; }
+        Err(_) => { return false; }
+      }
+    }
+  }
+  false
 }
 
 

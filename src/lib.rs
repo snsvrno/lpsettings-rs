@@ -4,7 +4,6 @@
 //! Looks for a `lovepack.toml` file by default.
 //!
 //! This scope contains the highest level functions allowing for easy integration into other libraries and projects.
-
 extern crate toml;
 extern crate clap;
 extern crate ansi_term;
