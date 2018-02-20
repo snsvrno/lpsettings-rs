@@ -49,8 +49,7 @@ fn get_user_input(question : &str) -> String {
   }
 
   // trims the \r\n at the end of the string.
-  let new_len = input.len();
-  input.truncate(new_len-2);
+  input = input.replace("\r","").replace("\n","");
   
   input
 }
