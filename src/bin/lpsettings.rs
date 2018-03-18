@@ -13,7 +13,7 @@ fn main() {
     .get_matches();
 
   // this will be in the parent program, so its only here in the bin app
-  if app.is_present("debug") { env::set_var("LOVEPACK_DEBUG","true"); }
+  if app.is_present("debug") { env::set_var("OUTPUT_DEBUG_ENABLED","true"); }
 
   // processess the arguement matches.
   match interface::process(&app) {

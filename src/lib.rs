@@ -4,20 +4,28 @@
 //! Looks for a `lovepack.toml` file by default.
 //!
 //! This scope contains the highest level functions allowing for easy integration into other libraries and projects.
+
+#[macro_use]
+extern crate serde_derive;
 extern crate toml;
 extern crate clap;
 extern crate ansi_term;
+#[macro_use]
+extern crate output;
 
 use std::env;
 use std::io::Error;
 use std::path::PathBuf;
 
 pub mod interface;
+mod structs;
 mod initalize;
 mod io;
 mod helper;
 mod paths;
 mod setting;
+
+use structs::settings::Settings;
 
 static SETTINGS_FOLDER : &str = ".lovepack";
 static SETTINGS_FILE : &str = "lovepack.toml";
@@ -45,9 +53,34 @@ pub fn get_settings_folder() -> Result<PathBuf,Error> {
 pub fn get_value(key_path:&str) -> Option<String> {
   //! gets the value from the environemntally determined location
 
-  match io::load_settings_map() {
-    Err(_) => { None }
-    Ok(settings) => { setting::get_value(&settings,&key_path) }
+  let path_global : PathBuf = paths::get_global_settings_path();
+  let path_local : PathBuf = paths::get_local_settings_path();
+
+  if let Ok(value) = env::var("LOVEPACK_SETTINGS_LOCATION") { 
+    if value == "global" { 
+    output_debug!("Using global settings.");
+
+      // only the global setting
+      let settings : Settings = Settings::load_from_or_empty(&path_global);
+      return settings.get_value(&key_path);
+    }
+    if value == "local" {
+    output_debug!("Using local settings.");
+
+      // only the local one 
+      let settings : Settings = Settings::load_from_or_empty(&path_local);
+      return settings.get_value(&key_path);
+    }
+    return None;
+  } else {
+    output_debug!("Using combined settings.");
+    
+    // load a combined setting to get the right value
+    let settings_local : Settings = Settings::load_from_or_empty(&path_local);
+    let mut settings_global : Settings = Settings::load_from_or_empty(&path_global);
+    settings_global += settings_local;
+    
+    return settings_global.get_value(&key_path);
   }
 }
 
@@ -74,17 +107,12 @@ pub fn set_value(key_path : &str, value : &str) -> bool {
 
   let path = get_path_complex();
 
-  match io::load_settings_raw_or_empty(&path) {
+  let mut settings = io::load_settings_raw_or_empty(&path);
+  settings.set_value(&key_path, &value);
+
+  match io::save_settings_map(&settings,&path) {
     Err(_) => { return false; }
-    Ok(mut settings) => {
-      setting::set_value(&mut settings, &key_path, &value);
-
-      match io::save_settings_map(&settings,&path) {
-        Err(_) => { return false; }
-        Ok(_) => { return true; }
-      }
-    }
-
+    Ok(_) => { return true; }
   }
 }
 
