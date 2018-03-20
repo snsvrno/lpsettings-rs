@@ -47,8 +47,8 @@ impl Settings {
   }
 
   pub fn get_value(&self, key : &str) -> Option<String> {
-    let path_tree : Vec<&str> = key.split(".").collect();
 
+    let path_tree : Vec<&str> = key.split(".").collect();
     let mut subtree : &Subsetting = &Subsetting::Single("Empty".to_string());
 
     for i in 0..path_tree.len() {
@@ -74,8 +74,43 @@ impl Settings {
     }
   }
 
-  pub fn set_value(&self, key : &str, value : &str) {
+  pub fn get_value_or(&self, key : &str, or_value : &str) -> String {
+    match self.get_value(key) {
+      None => { or_value.to_string() }
+      Some(value) => { value.to_string() }
+    }
+  }
 
+  pub fn set_value(&mut self, key : &str, value : &str) -> bool {
+    let mut parts : Vec<HashMap<String,Subsetting>> = Vec::new();
+    let path_tree : Vec<&str> = key.split(".").collect();
+    
+    for i in 0..path_tree.len()-1 {
+        if i == 0 {
+            if let Some(part) = self.parts.remove(&path_tree[i].to_string()) {
+                if let Subsetting::Complex(hash) = part { parts.push(hash); } else { parts.push(HashMap::new()); }
+            } else { parts.push(HashMap::new()); }
+        } else {
+            let index = parts.len()-1;
+            if let Some(part) = parts[index].remove(&path_tree[i].to_string()) {
+                if let Subsetting::Complex(hash) = part { parts.push(hash); } else { parts.push(HashMap::new()); }
+            } else { parts.push(HashMap::new()); }
+        }
+    }
+    
+    parts[path_tree.len()-2].insert(path_tree[path_tree.len()-1].to_string(),Subsetting::Single(value.to_string()));
+    
+    // rebuilds the tree
+    if parts.len() > 1 {
+        for i in (1..parts.len()).rev() {
+            let temp_part = parts.remove(i);
+            parts[i-1].insert(path_tree[i].to_string(),Subsetting::Complex(temp_part));
+        }    
+    }
+
+    self.parts.insert(path_tree[0].to_string(),Subsetting::Complex(parts.remove(0)));
+    
+    true
   }
 }
 
@@ -90,5 +125,32 @@ impl Add for Settings {
 impl AddAssign for Settings {
   fn add_assign(&mut self, other:Settings) {
     *self = other;
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use std::collections::HashMap;
+  use structs::subsetting::Subsetting;
+  use structs::settings::Settings;
+  
+  #[test]
+  fn get_value() {
+    let mut test_hash : HashMap<String,Subsetting> = HashMap::new();
+    test_hash.insert("test".to_string(),Subsetting::Single("value".to_string()));
+
+    let test_obj = Settings { parts: test_hash };
+    
+    assert_eq!(Some("value".to_string()),test_obj.get_value("test"));
+    assert_eq!(None,test_obj.get_value("tester"));
+    assert_eq!("value",test_obj.get_value_or("test","nope"));
+    assert_eq!("nope",test_obj.get_value_or("tester","nope"));
+  }
+
+  #[test]
+  fn set_value() {
+    let mut test_obj = Settings::new();
+    test_obj.set_value("a.b.c.d","mortan");
+    assert_eq!(test_obj.get_value("a.b.c.d"),Some("mortan".to_string()));
   }
 }

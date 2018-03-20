@@ -11,6 +11,7 @@ use paths;
 
 use structs::settings::Settings;
 
+// DELETE ME
 pub fn load_settings_raw(src : &PathBuf) -> Result<Settings,&'static str> {
   //! loads `Setting` directly from a file.
   //!
@@ -44,6 +45,7 @@ pub fn load_settings_raw(src : &PathBuf) -> Result<Settings,&'static str> {
   Err("Reached end of load_settings_raw wihtout result")
 }
 
+// DELETE ME
 pub fn load_settings_raw_or_empty(src : &PathBuf) -> Settings {
   //! a wrapper for `load_settings_raw` that will return an empty `Setting` if failed to load.
   //!
@@ -89,6 +91,7 @@ fn create_dir_if_not_exists(path :&PathBuf) -> bool {
 }
 
 
+// DELETE THIS
 pub fn load_settings_map() -> Settings {
   //! high level load function that checks env variables to determine where to load.
   //!
@@ -101,6 +104,7 @@ pub fn load_settings_map() -> Settings {
   load_settings_map_combined()
 }
 
+// DELETE ME
 pub fn load_settings_map_local() -> Settings {
   //! loads the *local* settings file or empty
 
@@ -108,6 +112,7 @@ pub fn load_settings_map_local() -> Settings {
   return load_settings_raw_or_empty(&path);
 }
 
+// DELETE ME
 pub fn load_settings_map_global() -> Settings {
   //! loads the *global* settings file or empty
 
@@ -115,6 +120,7 @@ pub fn load_settings_map_global() -> Settings {
   return load_settings_raw_or_empty(&path);
 }
 
+// DELETE ME
 pub fn load_settings_map_combined() -> Settings {
   //! loads a combined version of the *local* and *global* settings file.
   //!
