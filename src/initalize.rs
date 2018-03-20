@@ -2,7 +2,6 @@
 
 use std::path::PathBuf;
 
-use io;
 use ansi_term::Colour;
 
 use structs::settings::Settings;
@@ -15,10 +14,7 @@ pub fn create_default_settings_input(path : &PathBuf) -> bool {
   let mut default_settings : Settings = Settings::new();
   build_inital_settings(&mut default_settings);
 
-  match io::save_settings_map(&default_settings,&path) {
-    Err(_) => { false },
-    Ok(_) => { true }
-  }
+  default_settings.save_to(&path)
 }
 
 fn get_user_input(question : &str) -> String {

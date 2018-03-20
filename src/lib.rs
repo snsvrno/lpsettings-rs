@@ -14,16 +14,12 @@ extern crate ansi_term;
 extern crate output;
 
 use std::env;
-use std::io::Error;
 use std::path::PathBuf;
 
 pub mod interface;
 mod structs;
 mod initalize;
-mod io;
-mod helper;
 mod paths;
-mod setting;
 
 use structs::settings::Settings;
 
@@ -37,13 +33,13 @@ pub fn initalize() {
   initalize::create_default_settings_input(&path);
 }
 
-pub fn get_settings_folder() -> Result<PathBuf,Error> {
+pub fn get_settings_folder() -> Result<PathBuf,()> {
   let folder = paths::get_global_settings_folder();
 
   if !folder.exists() { 
     match std::fs::create_dir_all(&folder) {
       Ok(_) => { return Ok(folder); }
-      Err(error) => { return Err(error); }
+      Err(_) => { return Err(()); }
     }
   }
 
@@ -107,13 +103,10 @@ pub fn set_value(key_path : &str, value : &str) -> bool {
 
   let path = get_path_complex();
 
-  let mut settings = io::load_settings_raw_or_empty(&path);
+  let mut settings : Settings = Settings::load_from_or_empty(&path);
   settings.set_value(&key_path, &value);
 
-  match io::save_settings_map(&settings,&path) {
-    Err(_) => { return false; }
-    Ok(_) => { return true; }
-  }
+  settings.save_to(&path)
 }
 
 fn get_path_complex() -> PathBuf {

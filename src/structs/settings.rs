@@ -2,7 +2,7 @@ use std::ops::{Add,AddAssign};
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{File,create_dir_all};
 
 use structs::subsetting::Subsetting;
 
@@ -44,6 +44,32 @@ impl Settings {
       Ok(settings) => { settings }
       Err(_) => { Settings::new() }
     }
+  }
+
+  pub fn save_to(&self, path : &PathBuf) -> bool{
+    match toml::to_string(&self.parts){
+      Err(error) => { output_error!("Cannot parse obj to toml: {}",Yellow.paint(error.to_string())); return false; }
+      Ok(settings_string) => { 
+        // creates folder if doen't exist
+        if let Some(path) = path.parent() {
+          if !path.exists() { 
+            if let Err(error) = create_dir_all(&path) { output_error!("Cannot create folders for {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
+          }
+        }
+
+        let file = File::create(path);
+        match file {
+          Err(error) => { output_error!("Cannot create file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
+          Ok(mut file) => {
+            match file.write_all(settings_string.as_bytes()) {
+              Err(error) => { output_error!("Cannot write buffer to file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
+              Ok(_) => { return true; }
+            }
+          }
+        }
+      }
+    }
+
   }
 
   pub fn get_value(&self, key : &str) -> Option<String> {
