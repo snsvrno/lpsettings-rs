@@ -109,6 +109,24 @@ pub fn set_value(key_path : &str, value : &str) -> bool {
   settings.save_to(&path)
 }
 
+pub fn set_value_local(key_path : &str, value : &str) -> bool {
+  let path = paths::get_local_settings_path();
+
+  let mut settings : Settings = Settings::load_from_or_empty(&path);
+  settings.set_value(&key_path, &value);
+
+  settings.save_to(&path)
+}
+
+pub fn set_value_global(key_path : &str, value : &str) -> bool {
+  let path = paths::get_global_settings_path();
+
+  let mut settings : Settings = Settings::load_from_or_empty(&path);
+  settings.set_value(&key_path, &value);
+
+  settings.save_to(&path)
+}
+
 fn get_path_complex() -> PathBuf {
   //! determines what path to use based on the environmental variables.
 
