@@ -96,14 +96,12 @@ pub fn app() -> clap::App<'static,'static> {
   // switches
     .arg(clap::Arg::with_name("local")
       .long("local")
-      .group("location")
-      .help("Apply action to local settings file")
-      .conflicts_with("global"))
+      .help("Apply action to local settings file"))
 
     .arg(clap::Arg::with_name("global")
       .long("global")
-      .group("location")
-      .help("Apply action to global settings file; default"))
+      .help("Apply action to global settings file; default")
+      .conflicts_with("local"))
 
     .arg(clap::Arg::with_name("init")
       .long("init")

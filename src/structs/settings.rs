@@ -16,6 +16,17 @@ pub struct Settings {
 
 impl Settings {
   pub fn new() -> Settings { Settings { parts : HashMap::new() } }
+
+  pub fn from_flat(flat_hash : &HashMap<String,String>) -> Settings {
+    let mut new_hash = Settings::new();
+
+    for (key,value) in flat_hash.iter() {
+      new_hash.set_value(&key,&value);
+    }
+
+    new_hash
+  }
+
   pub fn load_from(path : &PathBuf) -> Result<Settings,()> {
 
     // loads the raw file into a buffer
@@ -69,7 +80,33 @@ impl Settings {
         }
       }
     }
+  }
 
+  pub fn get_flat_hash(&self) -> HashMap<String,String> {
+    Settings::flatten(&self.parts,None)
+  }
+
+  pub fn flatten(hash_to_flatten : &HashMap<String,Subsetting>, prefix : Option<String>) -> HashMap<String,String> {
+    let mut flat_hash : HashMap<String,String> = HashMap::new();
+
+    for (key,value) in hash_to_flatten.iter() {
+      match value {
+        &Subsetting::Complex(ref hash) => { 
+          let sub_flat_hash = Settings::flatten(&hash,Some(key.to_string()));
+          for (k2,v2) in sub_flat_hash.iter() {
+            let index : String = if let Some(ref prefix) = prefix { format!("{}.{}",prefix,k2) } else { k2.to_string() };
+            flat_hash.insert(index,v2.to_string());
+          }
+        },
+        &Subsetting::Single(ref string) => { 
+          let index : String = if let Some(ref prefix) = prefix { format!("{}.{}",prefix,key) } else { key.to_string() };
+          flat_hash.insert(index,string.to_string());
+        }
+      }
+    }
+
+
+    flat_hash
   }
 
   pub fn get_value(&self, key : &str) -> Option<String> {
@@ -144,13 +181,24 @@ impl Add for Settings {
   type Output = Settings;
 
   fn add(self, other: Settings) -> Settings {
-    Settings::new()
+    let mut flat_self = self.get_flat_hash();
+    let flat_other = other.get_flat_hash();
+    
+    for (key,value) in flat_other.iter() {
+      flat_self.insert(key.to_string(),value.to_string());
+    } 
+
+    Settings::from_flat(&flat_self)
   }
 }
 
 impl AddAssign for Settings {
   fn add_assign(&mut self, other:Settings) {
-    *self = other;
+    let flat_other = other.get_flat_hash();
+
+    for (key,value) in flat_other.iter() {
+      self.set_value(&key,&value);
+    }
   }
 }
 
@@ -178,5 +226,38 @@ mod tests {
     let mut test_obj = Settings::new();
     test_obj.set_value("a.b.c.d","mortan");
     assert_eq!(test_obj.get_value("a.b.c.d"),Some("mortan".to_string()));
+  }
+
+  #[test]
+  fn flatten() {
+    let mut test_obj = Settings::new();
+    test_obj.set_value("user.name","snsvrno");
+    test_obj.set_value("user.place","space");
+    test_obj.set_value("other.thing","nothing");
+
+    let flat = test_obj.get_flat_hash();
+    assert_eq!(Some(&"snsvrno".to_string()),flat.get("user.name"));
+    assert_eq!(Some(&"space".to_string()),flat.get("user.place"));
+    assert_eq!(Some(&"nothing".to_string()),flat.get("other.thing"));
+  }
+
+  #[test]
+  fn add() {
+    let mut test_obj = Settings::new();
+    test_obj.set_value("user.name","snsvrno");
+    test_obj.set_value("other.stuff","what");
+    test_obj.set_value("other.thing","nope");
+
+    let mut test_obj2 = Settings::new();
+    test_obj2.set_value("user.place","space");
+    test_obj2.set_value("other.thing","nothing");
+
+    let test_obj3 = test_obj + test_obj2;
+
+    assert_eq!(test_obj3.get_value("other.thing"),Some("nothing".to_string()));
+    assert_eq!(test_obj3.get_value("other.stuff"),Some("what".to_string()));
+    assert_eq!(test_obj3.get_value("user.place"),Some("space".to_string()));
+    assert_eq!(test_obj3.get_value("user.name"),Some("snsvrno".to_string()));
+
   }
 }
