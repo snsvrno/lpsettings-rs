@@ -23,8 +23,8 @@ mod paths;
 
 use structs::settings::Settings;
 
-static SETTINGS_FOLDER : &str = ".lovepack";
-static SETTINGS_FILE : &str = "lovepack.toml";
+pub static SETTINGS_FOLDER : &str = ".lovepack";
+pub static SETTINGS_FILE : &str = "lovepack.toml";
 
 pub fn initalize() {
   //! initalizes a default settings file at the environmentally determined location
