@@ -2,6 +2,9 @@
 
 use std::path::{PathBuf,Path};
 use std::env;
+use std::ffi;
+
+use ansi_term::Colour::Yellow;
 
 pub fn get_global_settings_path() -> PathBuf {
   //! determines what the *global* file path should be.
@@ -30,4 +33,40 @@ pub fn get_local_settings_path() -> PathBuf {
     path.push(super::SETTINGS_FILE);
     path
   }
+}
+
+pub fn check_if_a_path(string : &str) -> bool {
+  string.contains("/") || string.contains("\\")
+}
+
+pub fn get_absolute_path_from_str(string : &str) -> PathBuf {
+  let path = PathBuf::from(string);
+  if path.is_absolute() { return path; }
+
+  match env::current_dir() {
+    Err(error) => { output_error!("Cannot access current directory: {}",Yellow.paint(error.to_string())); }
+    Ok(mut path) => {
+      path.push(string);
+      return compress_path(&path);
+    }
+  }
+
+  path
+}
+
+fn compress_path(path : &PathBuf) -> PathBuf{
+  //! removes the ../../../ sections in a path
+
+  let mut new_string : String = String::new();
+  let mut parts : Vec<ffi::OsString> = Vec::new();
+  
+  for part in path.iter() {
+    if part == ".." { parts.pop(); }
+    else if part == "\\" { }
+    else { parts.push(part.to_os_string()); }
+  }
+
+  for part in parts { new_string = format!("{}{}\\",new_string,part.to_str().unwrap()); }
+
+  PathBuf::from(new_string)
 }

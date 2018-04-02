@@ -75,6 +75,13 @@ pub fn set_value(key_path : &str, value : &str) -> bool {
   //! sets the value to the environmentally determined location
 
   let path = get_path_complex();
+  let mut value = value.to_string();
+
+  // process the path to give the complete absolute path with expansions (.., ~, etc...)
+  if paths::check_if_a_path(&value) {
+    let abs_path = paths::get_absolute_path_from_str(&value);
+    value = abs_path.display().to_string();
+  }
 
   let mut settings : Settings = Settings::load_from_or_empty(&path);
   settings.set_value(&key_path, &value);
