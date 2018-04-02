@@ -49,35 +49,8 @@ pub fn get_settings_folder() -> Result<PathBuf,()> {
 pub fn get_value(key_path:&str) -> Option<String> {
   //! gets the value from the environemntally determined location
 
-  let path_global : PathBuf = paths::get_global_settings_path();
-  let path_local : PathBuf = paths::get_local_settings_path();
-
-  if let Ok(value) = env::var("LOVEPACK_SETTINGS_LOCATION") { 
-    if value == "global" { 
-    output_debug!("Using global settings.");
-
-      // only the global setting
-      let settings : Settings = Settings::load_from_or_empty(&path_global);
-      return settings.get_value(&key_path);
-    }
-    if value == "local" {
-    output_debug!("Using local settings.");
-
-      // only the local one 
-      let settings : Settings = Settings::load_from_or_empty(&path_local);
-      return settings.get_value(&key_path);
-    }
-    return None;
-  } else {
-    output_debug!("Using combined settings.");
-    
-    // load a combined setting to get the right value
-    let settings_local : Settings = Settings::load_from_or_empty(&path_local);
-    let mut settings_global : Settings = Settings::load_from_or_empty(&path_global);
-    settings_global += settings_local;
-    
-    return settings_global.get_value(&key_path);
-  }
+  let raw_settings : structs::settings::Settings = get_raw_settings_complex();
+  return raw_settings.get_value(&key_path);
 }
 
 pub fn has_value(key_path:&str) -> bool {
@@ -127,6 +100,27 @@ pub fn set_value_global(key_path : &str, value : &str) -> bool {
   settings.save_to(&path)
 }
 
+pub fn get_raw_local(key_path : Option<&str>) -> Option<structs::subsetting::Subsetting> {
+  let path = paths::get_local_settings_path();
+
+  let raw_settings : Settings = Settings::load_from_or_empty(&path);
+
+  match key_path {
+    None => { return Some(raw_settings.as_subsetting_consume()); }
+    Some(key_path) => { return raw_settings.get_raw(&key_path); }
+  }
+}
+
+pub fn get_raw(key_path : Option<&str>) -> Option<structs::subsetting::Subsetting> {
+  //! returns the substring with respect to the keypath.
+
+  let raw_settings : structs::settings::Settings = get_raw_settings_complex();
+  match key_path {
+    None => { return Some(raw_settings.as_subsetting_consume()); }
+    Some(key_path) => { return raw_settings.get_raw(&key_path); }
+  }
+}
+
 fn get_path_complex() -> PathBuf {
   //! determines what path to use based on the environmental variables.
 
@@ -135,4 +129,36 @@ fn get_path_complex() -> PathBuf {
     else if value == "local" { paths::get_local_settings_path() }
     else { paths::get_global_settings_path() }
   } else { paths::get_global_settings_path() }
+}
+
+fn get_raw_settings_complex() -> structs::settings::Settings {
+  //! gets the raw settins object from the environmentally determined location
+
+  let path_global : PathBuf = paths::get_global_settings_path();
+  let path_local : PathBuf = paths::get_local_settings_path();
+
+  if let Ok(value) = env::var("LOVEPACK_SETTINGS_LOCATION") { 
+    if value == "global" { 
+    output_debug!("Using global settings.");
+
+      // only the global setting
+      return Settings::load_from_or_empty(&path_global);
+    }
+    if value == "local" {
+    output_debug!("Using local settings.");
+
+      // only the local one 
+      return Settings::load_from_or_empty(&path_local);
+    }
+    return Settings::new();
+  } else {
+    output_debug!("Using combined settings.");
+    
+    // load a combined setting to get the right value
+    let settings_local : Settings = Settings::load_from_or_empty(&path_local);
+    let mut settings_global : Settings = Settings::load_from_or_empty(&path_global);
+    settings_global += settings_local;
+    
+    return settings_global;
+  }
 }

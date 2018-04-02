@@ -1,2 +1,2 @@
 pub mod settings;
-mod subsetting;
+pub mod subsetting;

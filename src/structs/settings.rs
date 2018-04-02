@@ -109,7 +109,30 @@ impl Settings {
     flat_hash
   }
 
+  pub fn as_subsetting_consume(self) -> Subsetting {
+    Subsetting::Complex(self.parts)
+  }
+
   pub fn get_value(&self, key : &str) -> Option<String> {
+
+    if let Some(raw_part) = self.get_raw(&key) {
+      match raw_part {
+        Subsetting::Complex(ref _hash) => { return Some("is complex".to_string()); },
+        Subsetting::Single(ref string) => { return Some(string.to_string()); }
+      }
+    }
+
+    None
+  }
+
+  pub fn get_value_or(&self, key : &str, or_value : &str) -> String {
+    match self.get_value(key) {
+      None => { or_value.to_string() }
+      Some(value) => { value.to_string() }
+    }
+  }
+
+  pub fn get_raw(&self, key : &str) -> Option<Subsetting> {
 
     let path_tree : Vec<&str> = key.split(".").collect();
     let mut subtree : &Subsetting = &Subsetting::Single("Empty".to_string());
@@ -131,17 +154,7 @@ impl Settings {
       }
     }
 
-    match *subtree {
-      Subsetting::Complex(ref _hash) => { return Some("is complex".to_string()); },
-      Subsetting::Single(ref string) => { return Some(string.to_string()); }
-    }
-  }
-
-  pub fn get_value_or(&self, key : &str, or_value : &str) -> String {
-    match self.get_value(key) {
-      None => { or_value.to_string() }
-      Some(value) => { value.to_string() }
-    }
+    return Some(subtree.clone());
   }
 
   pub fn set_value(&mut self, key : &str, value : &str) -> bool {
