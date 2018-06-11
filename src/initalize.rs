@@ -14,7 +14,10 @@ pub fn create_default_settings_input(path : &PathBuf) -> bool {
   let mut default_settings : Settings = Settings::new();
   build_inital_settings(&mut default_settings);
 
-  default_settings.save_to(&path)
+  match default_settings.save_to(&path) {
+    Ok(_) => { return true; }
+    Err(lperror) => { output_error!("{}",lperror); return false; }
+  }
 }
 
 fn get_user_input(question : &str) -> String {
@@ -48,10 +51,11 @@ fn get_user_input(question : &str) -> String {
   input
 }
 
-fn build_inital_settings(mut settings : &mut Settings) {
+fn build_inital_settings(settings : &mut Settings) {
   //! asks all the right questions to build a `Setting`.
   
-  for s in &["user.name","user.email"] {
-    settings.set_value(&s,&get_user_input(&s));
-  }
+  for s in &[
+    "user.name",
+    "user.email"
+  ] { settings.set_value(&s,&get_user_input(&s)); }
 }

@@ -6,6 +6,8 @@ use std::fs::{File,create_dir_all};
 
 use structs::subsetting::Subsetting;
 
+use lperror;
+
 use toml;
 use ansi_term::Colour::{Red,Yellow};
 
@@ -27,16 +29,31 @@ impl Settings {
     new_hash
   }
 
-  pub fn load_from(path : &PathBuf) -> Result<Settings,()> {
+  pub fn load_from(path : &PathBuf) -> Result<Settings,lperror::LovepackError> {
+    //! loads a settings object from a path, returns error if can't
 
     // loads the raw file into a buffer
     let mut buf : String = String::new();
     match File::open(&path) {
-      Err(error) => { output_error!("Cannot open settings file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return Err(()); }
+      Err(error) => { 
+        let lperror = lperror::LovepackError::Error(format!(
+          "Cannot open settings file {}: {}",
+          Red.paint(path.display().to_string()),
+          Yellow.paint(error.to_string())
+        ));
+        return Err(lperror) 
+      },
       Ok(mut file) => { 
         match file.read_to_string(&mut buf) {
           Ok(_) => { },
-          Err(error) => { output_error!("Cannot read file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return Err(()); }
+          Err(error) => { 
+            let lperror = lperror::LovepackError::Error(format!(
+              "Cannot read file {}: {}",
+              Red.paint(path.display().to_string()),
+              Yellow.paint(error.to_string())
+            ));
+            return Err(lperror)
+          }
         } 
       }
     }
@@ -45,36 +62,79 @@ impl Settings {
     if buf.len() > 0 {
       let hash : Result<HashMap<String,Subsetting>,_> = toml::from_str(&buf);
       match hash {
-        Err(error) => { output_error!("Error processing toml buffer: {}",Yellow.paint(error.to_string())); return Err( () ); }
+        Err(error) => { 
+          let lperror = lperror::LovepackError::Error(format!(
+            "Error processing toml buffer: {}",
+            Yellow.paint(error.to_string())
+          ));
+          return Err(lperror);
+        }
         Ok(parts) => { return Ok(Settings { parts: parts }); }
       }
-    } else { Err(()) }
+    } else { 
+      let lperror = lperror::LovepackError::Error(format!(
+        "Toml file {} is empty?",
+        Yellow.paint(path.display().to_string())
+      ));
+      Err(lperror) 
+    }
   }
   pub fn load_from_or_empty(path : &PathBuf) -> Settings {
+    //! loads a new setting object from a path, or creates an empty object it path doesn't exist
+
     match Settings::load_from(&path) {
       Ok(settings) => { settings }
       Err(_) => { Settings::new() }
     }
   }
 
-  pub fn save_to(&self, path : &PathBuf) -> bool{
+  pub fn save_to(&self, path : &PathBuf) -> Result<(),lperror::LovepackError> {
+    //! saves the setting object to a certain path
+
     match toml::to_string(&self.parts){
-      Err(error) => { output_error!("Cannot parse obj to toml: {}",Yellow.paint(error.to_string())); return false; }
+      Err(error) => { 
+        let lperror = lperror::LovepackError::Error(format!(
+          "Cannot parse obj to toml: {}",
+          Yellow.paint(error.to_string())
+        ));
+        return Err(lperror);
+      },
       Ok(settings_string) => { 
         // creates folder if doen't exist
         if let Some(path) = path.parent() {
           if !path.exists() { 
-            if let Err(error) = create_dir_all(&path) { output_error!("Cannot create folders for {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
+            if let Err(error) = create_dir_all(&path) { 
+              let lperror = lperror::LovepackError::Error(format!(
+                "Cannot create folders for {}: {}",
+                Red.paint(path.display().to_string()),
+                Yellow.paint(error.to_string())
+              )); 
+              return Err(lperror);
+            }
           }
         }
 
         let file = File::create(path);
         match file {
-          Err(error) => { output_error!("Cannot create file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
+          Err(error) => { 
+            let lperror = lperror::LovepackError::Error(format!(
+              "Cannot create file {}: {}",
+              Red.paint(path.display().to_string()),
+              Yellow.paint(error.to_string())
+            )); 
+            return Err(lperror);
+          },
           Ok(mut file) => {
             match file.write_all(settings_string.as_bytes()) {
-              Err(error) => { output_error!("Cannot write buffer to file {}: {}",Red.paint(path.display().to_string()),Yellow.paint(error.to_string())); return false; }
-              Ok(_) => { return true; }
+              Err(error) => { 
+                let lperror = lperror::LovepackError::Error(format!(
+                  "Cannot write buffer to file {}: {}",
+                  Red.paint(path.display().to_string()),
+                  Yellow.paint(error.to_string())
+                )); 
+                return Err(lperror)
+              }
+              Ok(_) => { return Ok(()); }
             }
           }
         }

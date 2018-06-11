@@ -5,7 +5,9 @@ use clap;
 use std::env;
 use ansi_term::Colour;
 
-pub fn process(matches : &clap::ArgMatches) -> Result<(),&'static str> {
+use lperror;
+
+pub fn process(matches : &clap::ArgMatches) -> Result<(),lperror::LovepackError> {
   //! process function to be used with [CLAP.RS](https://clap.rs/)'s `.get_matches()`.
   //!
   //! should be called with the subset of matches from clap's `.get_matches()` if used as a subcommand, or all the matches if used as the main app.
@@ -41,13 +43,15 @@ pub fn process(matches : &clap::ArgMatches) -> Result<(),&'static str> {
 }
 
 fn display_value(key : &str) {
-  //! displays the value to the cli
+  //! displays the value to the cli, internal to interface.rs
+
   if let Some(value) = super::get_value(&key) { println!("{}: {}",Colour::Yellow.paint(key),Colour::Blue.paint(value));} 
   else { println!("{} is not defined",Colour::Red.paint(key)); }
 }
 
 fn set_value(key : &str, value: &str) {
-  //! sets the value
+  //! sets the value, internal to interface.rs
+
   let which_setting_string : String = if let Ok(wheres) = env::var("LOVEPACK_SETTINGS_LOCATION") { (wheres + "ly").to_string() } else { "globally".to_string() };
 
   if super::set_value(&key,&value) { println!("Set {} to {} {}",Colour::Yellow.paint(key),Colour::Green.paint(value),which_setting_string); }

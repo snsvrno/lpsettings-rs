@@ -1,6 +1,6 @@
 [package]
 name = "lpsettings"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
 [dependencies]
@@ -9,4 +9,6 @@ serde_derive = "1.0.27"
 clap = "2.29.1"
 toml = "0.4.5"
 ansi_term = "0.10.2"
-output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.1.0" }
+
+output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.2.2" }
+lperror = { git = "https://github.com/Snsvrno/errors-lp-rs", tag = "0.1.0"}
