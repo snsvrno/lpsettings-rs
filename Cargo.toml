@@ -11,4 +11,5 @@ toml = "0.4.5"
 ansi_term = "0.10.2"
 
 output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.2.2" }
-lperror = { git = "https://github.com/Snsvrno/errors-lp-rs", tag = "0.1.0"}
+lperror = { git = "https://github.com/Snsvrno/errors-lp-rs", tag = "0.1.0" }
+updater = { git = "https://github.com/Snsvrno/updater-lp-rs", tag = "0.1.1" }

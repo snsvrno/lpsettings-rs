@@ -134,6 +134,7 @@ pub fn set_value_global(key_path : &str, value : &str) -> bool {
     Ok(_) => { return true; }
     Err(lperror) => { output_error!("{}",lperror); return false; }
   }
+
 }
 
 pub fn get_raw_local(key_path : Option<&str>) -> Option<structs::subsetting::Subsetting> {
