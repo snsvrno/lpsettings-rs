@@ -1,6 +1,6 @@
 [package]
 name = "lpsettings"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
 [dependencies]
