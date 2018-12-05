@@ -3,15 +3,28 @@ name = "lpsettings"
 version = "0.2.0"
 authors = ["snsvrno <snsvrno@tuta.io>"]
 
+license = "MIT"
+description = "a settings library for accessing lovepack settings"
+repository = "https://github.com/snsvrno/lpsettings-rs"
+readme = "README.md"
+
+exclude = [ "/src-binary" ]
+
 [dependencies]
+# for the chosen format, toml
 serde = "1.0"
-serde_derive = "1.0"
-clap = "2.32"
 toml = "0.4"
-settingsfile = "0.2"
+# for creating the interface
+clap = "2.32"
 ansi_term = "0.11"
+# the settings organization and Struct
+#settingsfile = "0.2"
+settingsfile = { path = " ../../../../libraries/settingsfile-rs"}
+# error handling
 failure = "0.1"
 
-#output = { git = "https://github.com/Snsvrno/output-lp-rs", tag = "0.2.2" }
-#lperror = { git = "https://github.com/Snsvrno/errors-lp-rs", tag = "0.1.0" }
+#keywords = ["configuration","settings","config"]
+#categories = ["config"]
+
+
 #updater = { git = "https://github.com/Snsvrno/updater-lp-rs", tag = "0.1.1" }

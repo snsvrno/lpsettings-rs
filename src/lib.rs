@@ -20,7 +20,8 @@ extern crate clap;
 
 // settings stuff
 extern crate settingsfile;
-use settingsfile::{ Type, SupportedType, ShadowSettings };
+use settingsfile::{ SupportedType, ShadowSettings };
+pub use settingsfile::Type;
 
 pub mod interface;
 

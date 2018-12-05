@@ -2,9 +2,10 @@
 extern crate clap;
 extern crate lpsettings;
 extern crate ansi_term;
+extern crate log;
+extern crate pretty_env_logger;
 //extern crate updater;
 
-use std::env;
 use lpsettings::interface;
 
 //static UPDATER_URL : &str = "https://github.com/snsvrno/lpsettings-rs";
@@ -15,8 +16,21 @@ fn main() {
         .arg(clap::Arg::with_name("debug").long("debug").help("Shows additional information about commands run."))
         .get_matches();
 
-    // this will be in the parent program, so its only here in the bin app
-    if app.is_present("debug") { env::set_var("OUTPUT_DEBUG_ENABLED","true"); }
+    // starts the loggers & sets the filter level for the logs
+    match pretty_env_logger::formatted_builder() {
+        Err(error) => { println!("Failed to start logging: {}",error); },
+        Ok(mut builder) => {
+            let level = if app.is_present("debug") { 
+                log::LevelFilter::Info 
+            } else { 
+                log::LevelFilter::Error 
+            };
+
+            builder
+                .filter(None,level)
+                .init();
+        }
+    }
 
     // checks if there are updates
     // check_for_updates();

@@ -98,10 +98,11 @@ fn set_value(key : &str, value: &str) {
                 None => format!(""),
             };
             
-            println!("Set {} to {} {} {}",
+            println!("{}{} {} to {} {}",
+                location.to_string_cap(),
+                if location == Location::Best { "Set" } else { " set" },
                 theme::key(key),
                 theme::key_value_set(value),
-                location,
                 old
             );
         },
