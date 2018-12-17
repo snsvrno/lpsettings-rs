@@ -9,6 +9,8 @@ clap = "2.32"
 ansi_term = "0.11"
 pretty_env_logger = "0.2"
 log = "0"
+updater-lp = "0.3"
+chrono = "0.4"
 
 [[bin]]
 name = "lpsettings"

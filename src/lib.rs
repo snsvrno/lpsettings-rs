@@ -21,7 +21,7 @@ extern crate clap;
 // settings stuff
 extern crate settingsfile;
 use settingsfile::{ SupportedType, ShadowSettings };
-pub use settingsfile::Type;
+pub use settingsfile::Type as Type;
 
 pub mod interface;
 
@@ -33,6 +33,23 @@ pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     Ok(settings.get_value(key))
+}
+
+pub fn get_value_or<A>(key : &str, default_value : &A) -> Type 
+    where A : SupportedType
+{
+    match get_value(key) {
+        Err(error) => { 
+            //error!("{}",error);
+            default_value.wrap()
+            }
+        Ok(option) => { 
+            match option {
+                Some(value) => value,
+                None => default_value.wrap()
+            } 
+        },
+    }
 }
 
 pub fn get_value_local(key : &str) -> Result<Option<Type>,Error> {

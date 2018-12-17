@@ -8,6 +8,9 @@ description = "a settings library for accessing lovepack settings"
 repository = "https://github.com/snsvrno/lpsettings-rs"
 readme = "README.md"
 
+keywords = ["lovepack","configuration","settings","config"]
+categories = ["config"]
+
 exclude = [ "/src-binary" ]
 
 [dependencies]
@@ -18,13 +21,6 @@ toml = "0.4"
 clap = "2.32"
 ansi_term = "0.11"
 # the settings organization and Struct
-#settingsfile = "0.2"
-settingsfile = { path = " ../../../../libraries/settingsfile-rs"}
+settingsfile = "0.2"
 # error handling
 failure = "0.1"
-
-#keywords = ["configuration","settings","config"]
-#categories = ["config"]
-
-
-#updater = { git = "https://github.com/Snsvrno/updater-lp-rs", tag = "0.1.1" }
