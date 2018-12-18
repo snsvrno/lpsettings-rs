@@ -23,11 +23,15 @@ extern crate settingsfile;
 use settingsfile::{ SupportedType, ShadowSettings };
 pub use settingsfile::Type as Type;
 
+#[macro_use] extern crate serde_derive;
+extern crate version_lp;
+
 pub mod interface;
 
 mod settings;
 mod location;
 mod theme;
+mod map;
 
 pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
     //! Get the value.
@@ -45,7 +49,7 @@ pub fn get_value_or<A>(key : &str, default_value : &A) -> Type
         Err(error) => { 
             //error!("{}",error);
             default_value.wrap()
-            }
+        },
         Ok(option) => { 
             match option {
                 Some(value) => value,
@@ -103,4 +107,67 @@ pub fn set_value_local<A>(key : &str, value : &A) -> Result<Option<Type>,Error>
     settings.save()?;
 
     Ok(old_value)
+}
+
+pub fn initalize(desc : bool) -> Result<(),Error>{
+    //! initalizes the global settings (only global)
+    //! 
+    //! uses the map.toml file from source to determine what
+    //! should be initalized and gives descriptions.
+    //! 
+    //! if the user leaves the entry blank it will not be editied or 
+    //! created, so the existing values will stay the same or new values
+    //! will not be created.
+    
+    let map =  map::create_options_map()?;
+    let lib_version = version_lp::Version::from_str(env!("CARGO_PKG_VERSION")).unwrap();
+
+    let mut settings = ShadowSettings::new(settings::Configuration{});
+    settings.load()?;
+
+    println!("Initializing settings, leave empty to keep existing / not set.");
+
+    for m in map {
+        if let Some(true) = m.init {
+            
+            if let Some(added) = m.added {
+                // if the added version is greater than the current version
+                // then this isn't valid
+                if added > lib_version { continue; }
+            }
+            if let Some(removed) = m.removed {
+                // if the removed version is less or equal than the current version
+                // then it isn't valid
+                if removed <= lib_version { continue; }
+            }
+
+            let old_value = settings.get_value_global(&m.key);
+            
+            let mut question = if let Some(old_value) = old_value {
+                format!("{}({})",
+                    theme::key(&m.key),
+                    theme::key_value(format!("{}",old_value)))
+            } else {
+                format!("{}",
+                    theme::key(&m.key))
+            };
+
+            // adds the descriptions if requested.
+            if desc {
+                question = format!("{} - {}",
+                    question,
+                    theme::comment(&m.desc));
+            }
+
+            let new_value = map::get_user_input(&question);
+            if new_value.len() > 0 {
+                settings.set_value_global(&m.key,&new_value)?;
+            }
+        }
+    }
+
+    // saves the new settings
+    settings.save()?;
+
+    Ok(())
 }

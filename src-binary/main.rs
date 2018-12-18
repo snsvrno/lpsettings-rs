@@ -20,8 +20,11 @@ fn main() {
     // - debug
     // - update
     let app = interface::app()
-        .arg(clap::Arg::with_name("debug").long("debug").help("Shows additional information about commands run."))
-        .arg(clap::Arg::with_name("update").long("update").help("Updates application"))
+        .arg(clap::Arg::with_name("debug")
+            .long("debug")
+            .help("Shows additional information about commands run."))
+        .subcommand(clap::SubCommand::with_name("update")
+            .about("Updates the app"))
         .get_matches();
 
     // starts the loggers & sets the filter level for the logs
@@ -44,7 +47,7 @@ fn main() {
     check_for_updates();
 
     // checks if the user wants to update
-    if app.is_present("update") {
+    if let Some(_) = app.subcommand_matches("update") {
         update_app();
     }
 

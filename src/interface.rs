@@ -26,7 +26,10 @@ pub fn process(matches : &clap::ArgMatches) -> Result<(),Error> {
     if matches.is_present("global") { env::set_var("LOVEPACK_SETTINGS_LOCATION","global"); }
     
     // checks if it should run the initalization instead
-    // if matches.is_present("init") { super::initalize(); }
+    if let Some(init_matches) = matches.subcommand_matches("init") { 
+        let desc = if init_matches.is_present("desc") { true } else { false };
+        super::initalize(desc)?; 
+    }
 
     let mut new_value : Option<String> = None;
     let mut key : Option<String> = None;
@@ -154,6 +157,14 @@ pub fn app() -> clap::App<'static,'static> {
         .about("Lovepack tool for getting and setting data from lovepack.toml files.")
         .name("lpsettings")
 
+    // functions
+        .subcommand(clap::SubCommand::with_name("init")
+            .about("Initalizes the settings file")
+            .arg(clap::Arg::with_name("desc")
+                .short("d")
+                .long("desc")
+                .help("Includes descriptions")))
+
     // switches
         .arg(clap::Arg::with_name("local")
             .long("local")
@@ -163,11 +174,6 @@ pub fn app() -> clap::App<'static,'static> {
             .long("global")
             .help("Apply action to global settings file; default")
             .conflicts_with("local"))
-
-        .arg(clap::Arg::with_name("init")
-            .long("init")
-            .help("Initalizes settings file")
-            .long_help("Initalizer for the settings file, goes through an inital prompt to set important values."))
 
     // parameters
         .arg(clap::Arg::with_name("KEY")
