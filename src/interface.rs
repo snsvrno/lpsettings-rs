@@ -31,6 +31,15 @@ pub fn process(matches : &clap::ArgMatches) -> Result<(),Error> {
         super::initalize(desc)?; 
     }
 
+    // list options
+    if let Some(list_matches) = matches.subcommand_matches("list") {
+        if list_matches.is_present("possible") {
+            super::list_possible()?;
+        } else {
+            super::list_current()?;
+        }
+    }
+
     let mut new_value : Option<String> = None;
     let mut key : Option<String> = None;
 
@@ -164,6 +173,13 @@ pub fn app() -> clap::App<'static,'static> {
                 .short("d")
                 .long("desc")
                 .help("Includes descriptions")))
+        
+        .subcommand(clap::SubCommand::with_name("list")
+            .about("List all current settings")
+            .arg(clap::Arg::with_name("possible")
+                .short("p")
+                .long("possible")
+                .help("Lists all valid options")))
 
     // switches
         .arg(clap::Arg::with_name("local")

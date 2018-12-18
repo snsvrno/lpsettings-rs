@@ -171,3 +171,35 @@ pub fn initalize(desc : bool) -> Result<(),Error>{
 
     Ok(())
 }
+
+pub fn list_possible() -> Result<(),Error> {
+    let map =  map::create_options_map()?;
+    let lib_version = version_lp::Version::from_str(env!("CARGO_PKG_VERSION")).unwrap();
+
+    for m in map {
+        if let Some(added) = m.added {
+            // if the added version is greater than the current version
+            // then this isn't valid
+            if added > lib_version { continue; }
+        }
+        if let Some(removed) = m.removed {
+            // if the removed version is less or equal than the current version
+            // then it isn't valid
+            if removed <= lib_version { continue; }
+        }
+
+        println!("{} - {}",
+            theme::key(&m.key),
+            theme::comment(&m.desc)
+        );
+    }
+
+    Ok(())
+}
+
+pub fn list_current() -> Result<(),Error> {
+    let mut settings = ShadowSettings::new(settings::Configuration{});
+    settings.load()?;  
+
+    Ok(())
+}
