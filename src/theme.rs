@@ -30,3 +30,7 @@ pub fn error_message<T: AsRef<str>>(text : T) -> String {
 pub fn comment<T: AsRef<str>>(text : T) -> String {
     format!("{}",Colour::Cyan.paint(text.as_ref()))
 }
+
+pub fn heading<T: AsRef<str>>(text : T) -> String {
+    format!("{}",Colour::White.bold().paint(text.as_ref()))
+}

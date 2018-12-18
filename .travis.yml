@@ -3,9 +3,6 @@ os:
 
 language: rust
 
-rust:
-- stable
-
 cache:
 - apt
 
@@ -13,34 +10,31 @@ matrix:
   include:
     - env:
       - TARGET=x86_64-unknown-linux-gnu
-
-      addons:
-        apt:
-          packages:
-            - tar
-            - jq
-
     - env:
       - TARGET=x86_64-pc-windows-gnu
-      - LINKER=a
-      addons:
-        apt:
-          packages:
-            - jq
-            - tar
-            - zip
-            - mingw-w64
+
+before_install:
+  - sudo apt get update
+  - sudo apt get install -y jq 
+  - |
+    if [[ $TARGET =~ windows ]]; then
+      sudo apt get intall -y zip mingw-w64
+    fi
+  - |
+    if [[ $TARGET =~ linux ]]; then
+      sudo apt get install tar
+    fi
 
 install:
   - export PATH="$PATH:$HOME/.cargo/bin"
   - rustup target add $TARGET || true
   - |
-    if [ -n "$LINKER" ]; then
+    if [ $TARGET == x86_64-pc-windows-gnu ]; then
       mkdir -p ~/.cargo
       echo >> ~/.cargo/config			
       echo '[target.x86_64-pc-windows-gnu]' >> ~/.cargo/config
-			echo 'linker = "x86_64-w64-mingw32-gcc"' >> ~/.cargo/config
-			echo 'ar = "x86_64-w64-mingw32-gcc-ar"' >> ~/.cargo/config
+      echo 'linker = "x86_64-w64-mingw32-gcc"' >> ~/.cargo/config
+      echo 'ar = "x86_64-w64-mingw32-gcc-ar"' >> ~/.cargo/config
     fi
 
 script:
@@ -51,9 +45,20 @@ before_deploy:
   - export CARGO_METADATA=$(cargo metadata --no-deps --format-version 1)
   - export APP_NAME=$(echo $CARGO_METADATA | jq -r '.packages[0].name')
   - export APP_VERSION=$(echo $CARGO_METADATA | jq -r '.packages[0].version')
-	- [[ $TARGET =~ 64 ]] && TARGET_PRETTY="x86_64" || TARGET_PRETTY="i686"
-	- [[ $TARGET =~ linux ]] && TARGET_PRETTY=nix-$TARGET_PRETTY
-	- [[ $TARGET =~ windows ]] && TARGET_PRETTY=win-$TARGET_PRETTY
+  - |
+    if [[ $TARGET =~ 64 ]]; then
+      TARGET_PRETTY="x86_64"
+    else
+      TARGET_PRETTY="i686"
+    fi
+  - |
+    if [[ $TARGET =~ linux ]]; then
+      TARGET_PRETTY=nix-$TARGET_PRETTY
+    fi
+  - |
+    if [[ $TARGET =~ windows ]]; then
+      TARGET_PRETTY=win-$TARGET_PRETTY
+    fi
   - |
     if [ $TARGET =~ "windows" ]; then
       FILES=$(find target/$TARGET/release/$RELEASE* ! -iname '*.d')

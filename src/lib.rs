@@ -46,10 +46,7 @@ pub fn get_value_or<A>(key : &str, default_value : &A) -> Type
 {
     //! Get the value or return a default value.
     match get_value(key) {
-        Err(error) => { 
-            //error!("{}",error);
-            default_value.wrap()
-        },
+        Err(_) => default_value.wrap(),
         Ok(option) => { 
             match option {
                 Some(value) => value,
@@ -200,6 +197,53 @@ pub fn list_possible() -> Result<(),Error> {
 pub fn list_current() -> Result<(),Error> {
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;  
+
+    let local_keys = { 
+        let mut keys = settings.keys_local();
+        keys.sort();
+        keys 
+    };
+
+    // only put the heading if there is local settings too.
+    if local_keys.len() > 0 {
+        println!("{}",theme::heading("Global Settings"));
+    }
+
+    let global_keys = { 
+        let mut keys = settings.keys_global();
+        keys.sort();
+        keys 
+    };
+
+    for k in global_keys {
+        if let Some(value) = settings.get_value_global(&k) {
+            println!("{}: {}",
+                theme::key(k),
+                theme::key_value(format!("{}",value))
+            );
+        } else {
+            println!("{}",
+                theme::key(k)
+            );
+        }
+    }
+
+    if local_keys.len() > 0 {
+        println!("{}",theme::heading("Local Settings"));
+
+        for k in local_keys {
+            if let Some(value) = settings.get_value_local(&k) {
+                println!("{}: {}",
+                    theme::key(k),
+                    theme::key_value(format!("{}",value))
+                );
+            } else {
+                println!("{}",
+                    theme::key(k)
+                );
+            }
+        }
+    }
 
     Ok(())
 }
