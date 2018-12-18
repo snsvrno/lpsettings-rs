@@ -2,6 +2,8 @@ os:
 - linux
 
 language: rust
+rust:
+- stable
 
 cache:
 - apt
@@ -14,15 +16,15 @@ matrix:
       - TARGET=x86_64-pc-windows-gnu
 
 before_install:
-  - sudo apt get update
-  - sudo apt get install -y jq 
+  - sudo apt-get update
+  - sudo apt-get install -y jq 
   - |
     if [[ $TARGET =~ windows ]]; then
-      sudo apt get intall -y zip mingw-w64
+      sudo apt-get intall -y zip mingw-w64
     fi
   - |
     if [[ $TARGET =~ linux ]]; then
-      sudo apt get install tar
+      sudo apt-get install tar
     fi
 
 install:
