@@ -12,9 +12,12 @@ use lpsettings::interface;
 static UPDATER_URL : &str = "https://github.com/snsvrno/lpsettings-rs";
 
 fn main() {    
-    // builds the app
+    // builds the app, adding cli specific switches for 
+    // - debug
+    // - update
     let app = interface::app()
         .arg(clap::Arg::with_name("debug").long("debug").help("Shows additional information about commands run."))
+        .arg(clap::Arg::with_name("update").long("update").help("Updates application"))
         .get_matches();
 
     // starts the loggers & sets the filter level for the logs
@@ -36,10 +39,29 @@ fn main() {
     // checks if there are updates
     check_for_updates();
 
+    // checks if the user wants to update
+    if app.is_present("update") {
+        update_app();
+    }
+
     // processess the arguement matches.
     match interface::process(&app) {
         Err(error) => { error!("{}",error); }
         Ok(_) => { }
+    }
+}
+
+fn update_app() {
+    match update_get_version_link() {
+        None => {
+            println!("No update available");
+        },
+        Some(link) => {
+            match updater_lp::update_from_link(&link) {
+                Err(error) => error!("{}",error),
+                Ok(_) => println!("Update complete."),
+            }
+        }
     }
 }
 
@@ -77,28 +99,27 @@ fn check_for_updates() {
     }
 
     // we are still here, so time to check for an update.
+    update_get_version_link();
+}
+
+fn update_get_version_link() -> Option<String> {
+    
+    let now = chrono::Utc::now();
+
     let pkg_ver = env!("CARGO_PKG_VERSION");
     match updater_lp::create_version(pkg_ver) {
         None => { warn!("Cannot create app version from {}, will not be checking for updates.",pkg_ver) },
         Some(app_version) => {
-
             info!("Checking for update, currently version {}",app_version);
-
             match updater_lp::get_link_for_latest(UPDATER_URL) {
                 Err(error) => { error!("{}",error); },
                 Ok((link,version)) => {
                     if version > app_version {
                         println!("Update available.");
                         info!("update found: {}",version);
-                        /*match updater_lp::update_from_link(&link) {
-                            Err(error) => { error!("{}",error) },
-                            Ok(_) => { 
-                                info!("Update successful.");
-                                lpsettings::set_value("lpsettings.update.last_check",&now.to_rfc3339());
-                            }
-                        }*/
                         lpsettings::set_value("lpsettings.update.last_check",&now.to_rfc3339());
                         lpsettings::set_value("lpsettings.update.available",&true);
+                        return Some(link);
                     } else {
                         info!("no update found.");
                         lpsettings::set_value("lpsettings.update.last_check",&now.to_rfc3339());
@@ -108,4 +129,6 @@ fn check_for_updates() {
             }
         }
     }
+
+    None
 }
