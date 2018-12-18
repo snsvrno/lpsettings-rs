@@ -30,6 +30,8 @@ mod location;
 mod theme;
 
 pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
+    //! Get the value.
+
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     Ok(settings.get_value(key))
@@ -38,6 +40,7 @@ pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
 pub fn get_value_or<A>(key : &str, default_value : &A) -> Type 
     where A : SupportedType
 {
+    //! Get the value or return a default value.
     match get_value(key) {
         Err(error) => { 
             //error!("{}",error);
@@ -53,12 +56,22 @@ pub fn get_value_or<A>(key : &str, default_value : &A) -> Type
 }
 
 pub fn get_value_local(key : &str) -> Result<Option<Type>,Error> {
+    //! Get the value in the local configuration only. 
+    //! 
+    //! Can return empty if the local file doesn't have a value but
+    //! the global one does.
+    
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     Ok(settings.get_value_local(key))
 }
 
 pub fn get_value_global(key : &str) -> Result<Option<Type>,Error> {
+    //! Get the value in the global configuration only.
+    //! 
+    //! Can return empty if the global file doesn't have a value but
+    //! the local one does.
+    
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     Ok(settings.get_value_global(key))
@@ -67,6 +80,8 @@ pub fn get_value_global(key : &str) -> Result<Option<Type>,Error> {
 pub fn set_value<A>(key : &str, value : &A) -> Result<Option<Type>,Error> 
     where A : SupportedType
 {
+    //! Sets the value on the global level.
+
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     let old_value = settings.get_value(key);
@@ -79,6 +94,8 @@ pub fn set_value<A>(key : &str, value : &A) -> Result<Option<Type>,Error>
 pub fn set_value_local<A>(key : &str, value : &A) -> Result<Option<Type>,Error> 
     where A : SupportedType
 {
+    //! Sets the value on the local level.
+
     let mut settings = ShadowSettings::new(settings::Configuration{});
     settings.load()?;
     let old_value = settings.get_value_local(key);

@@ -1,10 +1,15 @@
 use std::fmt;
 use std::env;
 
+/// a location to be used to determine where to load a value from
 #[derive(PartialEq)]
 pub enum Location {
+    
+    /// whatever the default recommeneded location is
     Best,
+    // the local location
     Local,
+    // the global location
     Global
 }
 

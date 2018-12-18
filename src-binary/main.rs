@@ -1,4 +1,6 @@
-//! simple basic cli interface for lpsettings library
+//! simple basic cli interface for lpsettings library,
+//! creates the lpsettins binary.
+
 extern crate clap;
 extern crate lpsettings;
 extern crate ansi_term;
@@ -9,9 +11,11 @@ extern crate chrono;
 
 use lpsettings::interface;
 
+// upstream for the repository, used as the source of the releases
 static UPDATER_URL : &str = "https://github.com/snsvrno/lpsettings-rs";
 
-fn main() {    
+fn main() {
+
     // builds the app, adding cli specific switches for 
     // - debug
     // - update
@@ -52,6 +56,10 @@ fn main() {
 }
 
 fn update_app() {
+    //! performs the actual update,
+    //! 
+    //! the user request to update the app.
+
     match update_get_version_link() {
         None => {
             println!("No update available");
@@ -66,10 +74,13 @@ fn update_app() {
 }
 
 fn check_for_updates() {
+    //! automatic checking for update loop,
+    //! 
+    //! writes to the configuration to keep track of somethings
     
     // if an update is already available, then no need to do this part.
     if let Ok(Some(lpsettings::Type::Switch(true))) = lpsettings::get_value("lpsettings.update.available") {
-        println!("Update available.");
+        println!("Update available, use `lpsettings update` to update.");
         return;
     }
 
@@ -103,6 +114,10 @@ fn check_for_updates() {
 }
 
 fn update_get_version_link() -> Option<String> {
+    //! returns the link for the most recent version,
+    //! 
+    //! also does some setting of the settings file based on update frequency
+    //! and if there is an update available or not.
     
     let now = chrono::Utc::now();
 
