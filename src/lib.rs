@@ -26,6 +26,8 @@ pub use settingsfile::Type as Type;
 #[macro_use] extern crate serde_derive;
 extern crate version_lp;
 
+use std::path::PathBuf;
+
 pub mod interface;
 
 mod settings;
@@ -33,8 +35,9 @@ mod location;
 mod theme;
 mod map;
 
-pub fn get_folder() -> Result<PathBuf,Error> {
-    settings::Configuration{}.get_folder()
+
+pub fn get_folder() -> PathBuf {
+    PathBuf::from(settingsfile::Format::get_path(&settings::Configuration{}))
 }
 
 pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
