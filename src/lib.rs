@@ -18,12 +18,16 @@ extern crate serde;
 extern crate ansi_term;
 extern crate clap;
 
+// for update helpers
+extern crate chrono;
+
 // settings stuff
 extern crate settingsfile;
 use settingsfile::{ SupportedType, ShadowSettings };
 pub use settingsfile::Type as Type;
 
 #[macro_use] extern crate serde_derive;
+#[macro_use] extern crate log;
 extern crate version_lp;
 
 use std::path::PathBuf;
@@ -34,6 +38,7 @@ mod settings;
 mod location;
 mod theme;
 mod map;
+pub mod update;
 
 
 pub fn get_folder() -> PathBuf {

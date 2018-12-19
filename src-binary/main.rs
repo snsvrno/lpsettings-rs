@@ -7,7 +7,6 @@ extern crate ansi_term;
 #[macro_use] extern crate log;
 extern crate pretty_env_logger;
 extern crate updater_lp;
-extern crate chrono;
 
 use lpsettings::interface;
 
@@ -87,33 +86,9 @@ fn check_for_updates() {
         return;
     }
 
-    // getting the update frequency, defaults to 1 day but can be overwritten
-    // in the config / settings
-    let mut frequency : i64 = 1;
-    if let Ok(Some(result)) = lpsettings::get_value("lpsettings.update.freq") {
-        match result {
-            lpsettings::Type::Int(int) => { frequency = int as i64; },
-            lpsettings::Type::Float(float) => { frequency = float as i64; },
-            _ => { }
-        }
+    if lpsettings::update::check_if_should_update("lpsettings") {
+        update_get_version_link();
     }
-
-    let now = chrono::Utc::now();
-
-    // checks if should update based on the frequency
-    if let Ok(Some(last_check)) = lpsettings::get_value("lpsettings.update.last_check") {
-        if let lpsettings::Type::Text(text_date) = last_check {
-            match chrono::DateTime::parse_from_rfc3339(&text_date){
-                Err(error) => { error!("{}",error); },
-                Ok(date) => {
-                    if now.signed_duration_since(date).num_days() < frequency { return; }
-                },
-            }
-        }
-    }
-
-    // we are still here, so time to check for an update.
-    update_get_version_link();
 }
 
 fn update_get_version_link() -> Option<String> {
@@ -121,8 +96,6 @@ fn update_get_version_link() -> Option<String> {
     //! 
     //! also does some setting of the settings file based on update frequency
     //! and if there is an update available or not.
-    
-    let now = chrono::Utc::now();
 
     let pkg_ver = env!("CARGO_PKG_VERSION");
     match updater_lp::create_version(pkg_ver) {
@@ -135,12 +108,12 @@ fn update_get_version_link() -> Option<String> {
                     if version > app_version {
                         println!("Update available.");
                         info!("update found: {}",version);
-                        lpsettings::set_value("lpsettings.update.last_check",&now.to_rfc3339());
+                        lpsettings::update::set_last_update_as_now("lpsettings");
                         lpsettings::set_value("lpsettings.update.available",&true);
                         return Some(link);
                     } else {
                         info!("no update found.");
-                        lpsettings::set_value("lpsettings.update.last_check",&now.to_rfc3339());
+                        lpsettings::update::set_last_update_as_now("lpsettings");
                         lpsettings::set_value("lpsettings.update.available",&false);
                     }
                 }
