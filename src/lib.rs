@@ -33,6 +33,10 @@ mod location;
 mod theme;
 mod map;
 
+pub fn get_folder() -> Result<PathBuf,Error> {
+    settings::Configuration{}.get_folder()
+}
+
 pub fn get_value(key : &str) -> Result<Option<Type>,Error> {
     //! Get the value.
 
