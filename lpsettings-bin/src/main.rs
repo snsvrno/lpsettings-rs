@@ -108,13 +108,26 @@ fn update_get_version_link() -> Option<String> {
                     if version > app_version {
                         println!("Update available.");
                         info!("update found: {}",version);
-                        lpsettings::update::set_last_update_as_now("lpsettings");
-                        lpsettings::set_value("lpsettings.update.available",&true);
+
+                        if let Err(error) = lpsettings::update::set_last_update_as_now("lpsettings") {
+                            error!("{}",error);
+                        }
+
+                        if let Err(error) = lpsettings::set_value("lpsettings.update.available",&true) {
+                            error!("{}",error);
+                        }
+
                         return Some(link);
                     } else {
                         info!("no update found.");
-                        lpsettings::update::set_last_update_as_now("lpsettings");
-                        lpsettings::set_value("lpsettings.update.available",&false);
+                        
+                        if let Err(error) = lpsettings::update::set_last_update_as_now("lpsettings") {
+                            error!("{}",error);
+                        }
+
+                        if let Err(error) = lpsettings::set_value("lpsettings.update.available",&false) {
+                            error!("{}",error);
+                        }
                     }
                 }
             }

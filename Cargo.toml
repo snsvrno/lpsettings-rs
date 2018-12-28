@@ -1,33 +1,6 @@
-[package]
-name = "lpsettings"
-version = "0.2.2"
-authors = ["snsvrno <snsvrno@tuta.io>"]
+[workspace]
 
-license = "MIT"
-description = "a settings library for accessing lovepack settings"
-repository = "https://github.com/snsvrno/lpsettings-rs"
-readme = "README.md"
-
-keywords = ["lovepack","configuration","settings","config"]
-categories = ["config"]
-
-exclude = [ "/src-binary" ]
-
-[dependencies]
-# for the chosen format, toml
-serde = "1.0"
-toml = "0.4"
-# for creating the interface
-clap = "2.32"
-ansi_term = "0.11"
-# the settings organization and Struct
-settingsfile = "0.2"
-# error handling
-failure = "0.1"
-log = "0.4"
-# for update helping functions
-chrono = "0.4"
-
-# for the optionmap
-version-lp = "0.2"
-serde_derive = "1.0"
+members = [
+    "lpsettings",
+    "lpsettings-bin"
+]

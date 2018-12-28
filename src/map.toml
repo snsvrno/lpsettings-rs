@@ -1,4 +1,0 @@
-values = [
-    { key = "user.name", desc = "the user's name", added = "0.2.0", init = true },
-    { key = "user.email", desc = "the user's email", added = "0.2.0", init = true }
-]

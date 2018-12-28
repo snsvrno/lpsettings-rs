@@ -1,0 +1,9 @@
+values = [
+    { key = "user.name", desc = "the user's name", added = "0.2.0", init = true },
+    { key = "user.email", desc = "the user's email", added = "0.2.0", init = true },
+    { key = "lprun.repo.use_defaults", desc = "tells lprun to look for LOVE binaries in the default repositories, defaults to true", added = "0.2.3" },
+    { key = "lprun.repo.links", desc = "array of additional repo links to look for LOVE binaries", added = "0.2.3" },
+    { key = "lprun.repo.file", desc = "file name for the offline storage of LOVE binary links", added = "0.2.3" },
+    { key = "lprun.repo.update.freq", desc = "how often to check for new LOVE binaries", added = "0.2.3" },
+    { key = "lprun.repo.update.last_check", desc = "the last time the app checked fro new LOVE binaries", added = "0.2.3" },
+]
