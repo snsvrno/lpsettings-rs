@@ -6,7 +6,7 @@ authors = ["snsvrno <snsvrno@tuta.io>"]
 license = "MIT"
 description = "a settings library for accessing lovepack settings"
 repository = "https://github.com/snsvrno/lpsettings-rs"
-readme = "README.md"
+readme = "../README.md"
 
 keywords = ["lovepack","configuration","settings","config"]
 categories = ["config"]
