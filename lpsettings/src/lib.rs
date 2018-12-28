@@ -16,6 +16,8 @@ extern crate serde;
 
 // terminal stuff
 extern crate ansi_term;
+
+#[cfg(feature = "cli")]
 extern crate clap;
 
 // for update helpers
@@ -32,6 +34,7 @@ extern crate version_lp;
 
 use std::path::PathBuf;
 
+#[cfg(feature = "cli")]
 pub mod interface;
 
 mod settings;
